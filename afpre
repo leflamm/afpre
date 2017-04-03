@@ -2,10 +2,24 @@
 
 set -e
 
-# echo $$
+which afp &> /dev/null || 
+(
+	echo "Executable 'afp' no found in your \$PATH"
+	exit 1
+)
 
-which afp &> /dev/null || echo "Executable 'afp' no found in your $PATH"
-which timeout &> /dev/null || echo "Executable 'timeout' not found in your $PATH. Maybe you need to install package 'coreutils'...?"
+which timeout &> /dev/null || 
+(
+	echo "Executable 'timeout' not found in your \$PATH."
+	echo "Maybe you need to install package 'coreutils'...?"
+	exit 1
+)
+
+grep -Ei "(--help|-h)" <<< $* && 
+(
+	afp --help
+	exit 1
+)
 
 TIMEOUT=3559
 CTRLCWAIT=5
