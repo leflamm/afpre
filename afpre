@@ -8,8 +8,15 @@ which afp &> /dev/null || echo "Executable 'afp' no found in your $PATH"
 which timeout &> /dev/null || echo "Executable 'timeout' not found in your $PATH. Maybe you need to install package 'coreutils'...?"
 
 TIMEOUT=3559
+CTRLCWAIT=5
 
 while true
 do
 	timeout --foreground ${TIMEOUT} afp $*
+	echo "You have ${CTRLCWAIT} seconds to press CTRL+C to exit reconnect loop."
+	for i in $(seq ${CTRLCWAIT} -1 1)
+	do
+		echo -n $i" "
+		sleep 1
+	done
 done
