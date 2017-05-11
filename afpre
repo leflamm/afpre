@@ -1,36 +1,34 @@
-#!/bin/bash
+#/bin/bash
 
 set -e
 
-which afp &> /dev/null || 
-(
-	echo "Executable 'afp' no found in your \$PATH"
-	exit 1
-)
+check_dep() {
+	which $1 &> /dev/null || 
+	(
+		echo "Executable '$1' no found in your \$PATH"
+		exit 1
+	)
+}
 
-which timeout &> /dev/null || 
-(
-	echo "Executable 'timeout' not found in your \$PATH."
-	echo "Maybe you need to install package 'coreutils'...?"
-	exit 1
-)
+json_value() {
+	jq -r ."${2}" <<<"${1}"
+}
 
-grep -Ei "(--help|-h)" <<< $* && 
-(
-	afp --help
-	exit 1
-)
+check_dep curl
+check_dep jq
+check_dep openssl
 
-TIMEOUT=3559
-CTRLCWAIT=5
+HOST=your.afp.host
+_PATH=/afp-api/latest/account
+ACCOUNT=$1
+ROLE=$2
 
-while true
-do
-	timeout --foreground ${TIMEOUT} afp $*
-	echo "You have ${CTRLCWAIT} seconds to press CTRL+C to exit reconnect loop."
-	for i in $(seq ${CTRLCWAIT} -1 1)
-	do
-		echo -n $i" "
-		sleep 1
-	done
-done
+echo -n "username: " && read NAME
+echo -n "password: " && read -s PW
+echo
+
+CREDS=$(echo -n $NAME:$PW|openssl base64 -base64)
+JSON=$(curl -s -H "Authorization: Basic ${CREDS}" https://${HOST}${_PATH}/${ACCOUNT}/${ROLE})
+
+AWS_ACCESS_KEY_ID=$(json_value "$JSON" AccessKeyId) AWS_SECRET_ACCESS_KEY=$(json_value "$JSON" SecretAccessKey) AWS_SESSION_TOKEN=$(json_value "$JSON" Token) AWS_SECURITY_TOKEN=${AWS_SESSION_TOKEN} bash  
+
