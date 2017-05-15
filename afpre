@@ -2,6 +2,11 @@
 
 set -e
 
+[ $# -eq 2 ] || {
+	echo "** usage: $0 <account> <role>"
+	exit 1
+}
+
 check_dep() {
 	which $1 &> /dev/null || 
 	(
