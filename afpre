@@ -1,14 +1,25 @@
 #/bin/bash
-
+#set -x
 set -e
+
+### definitions
+
+HOST=your.afp.host
+_PATH=/afp-api/latest/account
+ACCOUNT=$1
+ROLE=$2
+
+### check usage
 
 [ $# -eq 2 ] || {
 	echo "** usage: $0 <account> <role>"
 	exit 1
 }
 
+### functions
+
 check_dep() {
-	which $1 &> /dev/null || 
+	which $1 &> /dev/null ||
 	(
 		echo "Executable '$1' no found in your \$PATH"
 		exit 1
@@ -19,21 +30,55 @@ json_value() {
 	jq -r ."${2}" <<<"${1}"
 }
 
+### prompt
+
+! read -d '' PROMPT_SCRIPT <<"EOF"
+# Pretend to be an interactive, non-login shell
+for file in /etc/bash.bashrc ~/.bashrc; do
+    [ -f "$file" ] && . "$file"
+done
+
+afp_minutes_left() {
+    if (($SECONDS >= $AWS_VALID_SECONDS))
+    then
+        echo EXPIRED
+    else
+        echo $(((${AWS_VALID_SECONDS}-${SECONDS})/60)) Min
+    fi
+}
+
+PS1="(AWS ${AWS_ACCOUNT}/${AWS_ROLE} \\$(afp_minutes_left)) $PS1"
+EOF
+
+echo "** checking dependecies"
+
 check_dep curl
 check_dep jq
 check_dep openssl
 
-HOST=your.afp.host
-_PATH=/afp-api/latest/account
-ACCOUNT=$1
-ROLE=$2
+echo "** reading credentials"
 
 echo -n "username: " && read NAME
 echo -n "password: " && read -s PW
 echo
 
+echo "** authenticating"
+
 CREDS=$(echo -n $NAME:$PW|openssl base64 -base64)
 JSON=$(curl -s -H "Authorization: Basic ${CREDS}" https://${HOST}${_PATH}/${ACCOUNT}/${ROLE})
 
-AWS_ACCESS_KEY_ID=$(json_value "$JSON" AccessKeyId) AWS_SECRET_ACCESS_KEY=$(json_value "$JSON" SecretAccessKey) AWS_SESSION_TOKEN=$(json_value "$JSON" Token) AWS_SECURITY_TOKEN=${AWS_SESSION_TOKEN} bash  
+echo "** assembling environment"
 
+TMPFILE=$(mktemp)
+echo export AWS_ACCESS_KEY_ID=$(json_value "$JSON" AccessKeyId) > $TMPFILE
+echo export AWS_SECRET_ACCESS_KEY=$(json_value "$JSON" SecretAccessKey)  >> $TMPFILE
+echo export AWS_SESSION_TOKEN=$(json_value "$JSON" Token) >> $TMPFILE
+echo export AWS_SECURITY_TOKEN=$(json_value "$JSON" Token) >> $TMPFILE
+echo export AWS_VALID_SECONDS=$(($(date -d $(json_value "$JSON" Expiration) +%s)-$(date +%s))) >> $TMPFILE
+echo export AWS_ACCOUNT=$ACCOUNT >> $TMPFILE
+echo export AWS_ROLE=$ROLE >> $TMPFILE
+echo "${PROMPT_SCRIPT}" >> $TMPFILE
+
+echo "** starting bash"
+
+bash --rcfile $TMPFILE
