@@ -33,9 +33,9 @@ json_value() {
 ### prompt
 
 ! read -d '' PROMPT_SCRIPT <<"EOF"
-for file in /etc/bash.bashrc ~/.bashrc
+for F in /etc/bash.bashrc ~/.bashrc
 do
-    [ -f "$file" ] && . "$file"
+    [ -f "${F}" ] && . "${F}"
 done
 
 minutes_left() {
