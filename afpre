@@ -33,21 +33,18 @@ json_value() {
 ### prompt
 
 ! read -d '' PROMPT_SCRIPT <<"EOF"
-# Pretend to be an interactive, non-login shell
-for file in /etc/bash.bashrc ~/.bashrc; do
+for file in /etc/bash.bashrc ~/.bashrc
+do
     [ -f "$file" ] && . "$file"
 done
 
-afp_minutes_left() {
-    if (($SECONDS >= $AWS_VALID_SECONDS))
-    then
-        echo EXPIRED
-    else
-        echo $(((${AWS_VALID_SECONDS}-${SECONDS})/60)) Min
-    fi
+minutes_left() {
+    (($SECONDS >= $AWS_VALID_SECONDS)) \
+	&& echo EXPIRED \
+	|| echo $(((${AWS_VALID_SECONDS}-${SECONDS})/60)) Min
 }
 
-PS1="(AWS ${AWS_ACCOUNT}/${AWS_ROLE} \\$(afp_minutes_left)) $PS1"
+PS1="(${AWS_ACCOUNT}/${AWS_ROLE} \\$(minutes_left)) $PS1"
 EOF
 
 echo "** checking dependecies"
@@ -62,7 +59,7 @@ echo -n "username: " && read NAME
 echo -n "password: " && read -s PW
 echo
 
-echo "** authenticating"
+echo "** authenticating as ${NAME} for ${ACCOUNT}/${ROLE} against ${HOST}"
 
 CREDS=$(echo -n $NAME:$PW|openssl base64 -base64)
 JSON=$(curl -s -H "Authorization: Basic ${CREDS}" https://${HOST}${_PATH}/${ACCOUNT}/${ROLE})
