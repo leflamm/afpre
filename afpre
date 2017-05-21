@@ -1,4 +1,5 @@
 #/bin/bash
+
 #set -x
 set -e
 
@@ -27,7 +28,15 @@ check_dep() {
 }
 
 json_value() {
-	jq -r ."${2}" <<<"${1}"
+	jq -r ."${2}" <<<"${1}" 
+}
+
+encode64() {
+	echo -n "${1}" | openssl base64 -base64 
+}
+
+basic_auth() {
+	curl -f -s -H "Authorization: Basic ${2}" ${1} 
 }
 
 ### prompt
@@ -61,8 +70,11 @@ echo
 
 echo "** authenticating as ${NAME} for ${ACCOUNT}/${ROLE} against ${HOST}"
 
-CREDS=$(echo -n $NAME:$PW|openssl base64 -base64)
-JSON=$(curl -s -H "Authorization: Basic ${CREDS}" https://${HOST}${_PATH}/${ACCOUNT}/${ROLE})
+CREDS=$(encode64 $NAME:$PW)
+JSON=$(basic_auth https://${HOST}${_PATH}/${ACCOUNT}/${ROLE} "${CREDS}") || {
+	echo "** ... failed!"
+	exit 1
+}
 
 echo "** assembling environment"
 
