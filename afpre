@@ -5,24 +5,14 @@ set -e
 
 ### definitions
 
-HOST=your.afp.host
-_PATH=/afp-api/latest/account
-ACCOUNT=$1
-ROLE=$2
-
-### check usage
-
-[ $# -eq 2 ] || {
-	echo "** usage: $0 <account> <role>"
-	exit 1
-}
+CFG=~/.afpre
 
 ### functions
 
 check_dep() {
 	which $1 &> /dev/null ||
 	(
-		echo "Executable '$1' no found in your \$PATH"
+		echo "** executable '$1' no found in your \$PATH"
 		exit 1
 	)
 }
@@ -37,6 +27,17 @@ encode64() {
 
 basic_auth() {
 	curl -f -s -H "Authorization: Basic ${2}" ${1} 
+}
+
+check_config_key() {
+	grep -q "^${1}=" ${CFG} || {
+		echo "** configuration key \"${1}\" not found ind config file \"${CFG}\""
+		exit 1
+	}
+}
+
+variable_empty() {
+	[ -z "${1}" ]
 }
 
 ### prompt
@@ -56,17 +57,24 @@ minutes_left() {
 PS1="(${AWS_ACCOUNT}/${AWS_ROLE} \\$(minutes_left)) $PS1"
 EOF
 
-echo "** checking dependecies"
-
 check_dep curl
 check_dep jq
 check_dep openssl
+check_config_key ACCOUNT
+check_config_key ROLE
+check_config_key _PATH
+check_config_key HOST
 
-echo "** reading credentials"
+source $CFG
 
-echo -n "username: " && read NAME
-echo -n "password: " && read -s PW
-echo
+variable_empty $NAME && {
+	echo -n "username: " && read NAME
+}
+
+variable_empty $PW && {
+	echo -n "password: " && read -s PW
+	echo
+}
 
 echo "** authenticating as ${NAME} for ${ACCOUNT}/${ROLE} against ${HOST}"
 
