@@ -87,14 +87,16 @@ JSON=$(basic_auth https://${HOST}${_PATH}/${ACCOUNT}/${ROLE} "${CREDS}") || erro
 echo "assembling environment"
 
 TMPFILE=$(mktemp)
-echo export AWS_ACCESS_KEY_ID=$(json_value "$JSON" AccessKeyId) > $TMPFILE
-echo export AWS_SECRET_ACCESS_KEY=$(json_value "$JSON" SecretAccessKey)  >> $TMPFILE
-echo export AWS_SESSION_TOKEN=$(json_value "$JSON" Token) >> $TMPFILE
-echo export AWS_SECURITY_TOKEN=$(json_value "$JSON" Token) >> $TMPFILE
-echo export AWS_VALID_SECONDS=$(($(date -d $(json_value "$JSON" Expiration) +%s)-$(date +%s))) >> $TMPFILE
-echo export AWS_ACCOUNT=$ACCOUNT >> $TMPFILE
-echo export AWS_ROLE=$ROLE >> $TMPFILE
-echo "${PROMPT_SCRIPT}" >> $TMPFILE
+echo "
+export AWS_ACCESS_KEY_ID=$(json_value "${JSON}" AccessKeyId) 
+export AWS_SECRET_ACCESS_KEY=$(json_value "${JSON}" SecretAccessKey) 
+export AWS_SESSION_TOKEN=$(json_value "${JSON}" Token) 
+export AWS_SECURITY_TOKEN=$(json_value "${JSON}" Token)
+export AWS_VALID_SECONDS=$(($(date -d $(json_value "${JSON}" Expiration) +%s)-$(date +%s)))
+export AWS_ACCOUNT=${ACCOUNT}
+export AWS_ROLE=${ROLE}
+${PROMPT_SCRIPT}
+" > $TMPFILE
 
 echo "** starting bash"
 
