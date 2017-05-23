@@ -1,4 +1,0 @@
-123
-dsf
-echo $RANDOM
-done
