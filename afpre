@@ -9,12 +9,13 @@ CFG=~/.afpre
 
 ### functions
 
+error_msg() {
+	echo $1
+	exit 1
+}
+
 check_dep() {
-	which $1 &> /dev/null ||
-	(
-		echo "** executable '$1' no found in your \$PATH"
-		exit 1
-	)
+	which $1 &> /dev/null || error_msg "executable '$1' no found in your \$PATH"
 }
 
 json_value() {
@@ -29,11 +30,12 @@ basic_auth() {
 	curl -f -s -H "Authorization: Basic ${2}" ${1} 
 }
 
+check_config_file() {
+	[ -f "${CFG}" ] || error_msg "missing config file: ${CFG}"
+}
+
 check_config_key() {
-	grep -q "^${1}=" ${CFG} || {
-		echo "** configuration key \"${1}\" not found ind config file \"${CFG}\""
-		exit 1
-	}
+	grep -q "^${1}=" ${CFG} || error_msg "configuration key \"${1}\" not found in config file \"${CFG}\""
 }
 
 variable_empty() {
@@ -60,6 +62,7 @@ EOF
 check_dep curl
 check_dep jq
 check_dep openssl
+check_config_file
 check_config_key ACCOUNT
 check_config_key ROLE
 check_config_key _PATH
@@ -76,15 +79,12 @@ variable_empty $PW && {
 	echo
 }
 
-echo "** authenticating as ${NAME} for ${ACCOUNT}/${ROLE} against ${HOST}"
+echo "authenticating as ${NAME} for ${ACCOUNT}/${ROLE} against ${HOST}"
 
 CREDS=$(encode64 $NAME:$PW)
-JSON=$(basic_auth https://${HOST}${_PATH}/${ACCOUNT}/${ROLE} "${CREDS}") || {
-	echo "** ... failed!"
-	exit 1
-}
+JSON=$(basic_auth https://${HOST}${_PATH}/${ACCOUNT}/${ROLE} "${CREDS}") || error_msg "... failed!"
 
-echo "** assembling environment"
+echo "assembling environment"
 
 TMPFILE=$(mktemp)
 echo export AWS_ACCESS_KEY_ID=$(json_value "$JSON" AccessKeyId) > $TMPFILE
