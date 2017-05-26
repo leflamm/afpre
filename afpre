@@ -1,4 +1,4 @@
-#/bin/bash
+#!/bin/bash
 
 #set -x
 set -e
@@ -10,24 +10,16 @@ CFG=~/.afpre
 ### functions
 
 error_msg() {
-	echo $1
+	echo "${1}"
 	exit 1
 }
 
 check_dep() {
-	which $1 &> /dev/null || error_msg "executable '$1' no found in your \$PATH"
-}
-
-json_value() {
-	jq -r ."${2}" <<<"${1}" 
+	which "${1}" &> /dev/null || error_msg "executable '$1' no found in your \$PATH"
 }
 
 encode64() {
-	echo -n "${1}" | openssl base64 -base64 
-}
-
-basic_auth() {
-	curl -f -s -H "Authorization: Basic ${2}" ${1} 
+	echo -n "${1}" | openssl base64 -base64
 }
 
 check_config_file() {
@@ -42,23 +34,6 @@ variable_empty() {
 	[ -z "${1}" ]
 }
 
-### prompt
-
-! read -d '' PROMPT_SCRIPT <<"EOF"
-for F in /etc/bash.bashrc ~/.bashrc
-do
-    [ -f "${F}" ] && . "${F}"
-done
-
-minutes_left() {
-    (($SECONDS >= $AWS_VALID_SECONDS)) \
-	&& echo EXPIRED \
-	|| echo $(((${AWS_VALID_SECONDS}-${SECONDS})/60)) Min
-}
-
-PS1="(${AWS_ACCOUNT}/${AWS_ROLE} \\$(minutes_left)) $PS1"
-EOF
-
 check_dep curl
 check_dep jq
 check_dep openssl
@@ -70,34 +45,62 @@ check_config_key HOST
 
 source $CFG
 
-variable_empty $NAME && {
+variable_empty "${NAME}" && {
 	echo -n "username: " && read NAME
 }
 
-variable_empty $PW && {
+variable_empty "${PW}" && {
 	echo -n "password: " && read -s PW
 	echo
 }
 
-echo "authenticating as ${NAME} for ${ACCOUNT}/${ROLE} against ${HOST}"
+X1XBN02R=$(encode64 "${NAME}:${PW}")
 
-CREDS=$(encode64 $NAME:$PW)
-JSON=$(basic_auth https://${HOST}${_PATH}/${ACCOUNT}/${ROLE} "${CREDS}") || error_msg "... failed!"
+! read -r -d '' RC <<EOF
+#set -x
 
-echo "assembling environment"
+for F in /etc/bash.bashrc ~/.bashrc
+do
+    [ -f "\${F}" ] && . "\${F}"
+done
 
-TMPFILE=$(mktemp)
-echo "
-export AWS_ACCESS_KEY_ID=$(json_value "${JSON}" AccessKeyId) 
-export AWS_SECRET_ACCESS_KEY=$(json_value "${JSON}" SecretAccessKey) 
-export AWS_SESSION_TOKEN=$(json_value "${JSON}" Token) 
-export AWS_SECURITY_TOKEN=$(json_value "${JSON}" Token)
-export AWS_VALID_SECONDS=$(($(date -d $(json_value "${JSON}" Expiration) +%s)-$(date +%s)))
-export AWS_ACCOUNT=${ACCOUNT}
-export AWS_ROLE=${ROLE}
-${PROMPT_SCRIPT}
-" > $TMPFILE
+variable_empty() {
+        [ -z "\${1}" ]
+}
+
+error_msg() {
+        echo \$1
+        exit 1
+}
+
+basic_auth() {
+        curl -f -s -H "Authorization: Basic \${2}" \${1}
+}
+
+json_value() {
+        jq -r ."\${2}" <<<"\${1}"
+}
+
+PROMPT_COMMAND="{
+        ((\\\$SECONDS >= \\\$((\\\$AWS_VALID_SECONDS)) - 100)) && {
+                echo token expired - need to renew... 
+                echo authenticating as ${NAME} for ${ACCOUNT}/${ROLE} against ${HOST}
+                JSON=\\\$(basic_auth https://${HOST}${_PATH}/${ACCOUNT}/${ROLE} ${X1XBN02R}) || error_msg \"... failed!\"
+                export AWS_ACCESS_KEY_ID=\\\$(json_value \"\\\${JSON}\" AccessKeyId)
+                export AWS_SECRET_ACCESS_KEY=\\\$(json_value \"\\\${JSON}\" SecretAccessKey)
+                export AWS_SESSION_TOKEN=\\\$(json_value \"\\\${JSON}\" Token)
+                export AWS_SECURITY_TOKEN=\\\$(json_value \"\\\${JSON}\" Token)
+                export AWS_VALID_SECONDS=\\\$((\\\$(date -d \\\$(json_value \"\\\${JSON}\" Expiration) +%s)-\\\$(date +%s)))
+                echo done.
+        }
+}"
+
+PS1="(${ACCOUNT}/${ROLE}) $PS1"
+EOF
 
 echo "** starting bash"
 
-bash --rcfile $TMPFILE
+RCFILE=$(mktemp)
+echo "${RC}" > $RCFILE
+
+AWS_VALID_SECONDS=0 bash --rcfile $RCFILE
