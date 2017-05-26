@@ -95,7 +95,7 @@ PROMPT_COMMAND="{
         }
 }"
 
-PS1="(${ACCOUNT}/${ROLE}) \$PS1"
+PS1="AFP| \$PS1"
 EOF
 
 echo "starting bash"
