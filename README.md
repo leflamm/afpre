@@ -31,3 +31,9 @@ _PATH=<your path to service endpoint, typically "/afp-api/latest/account">
 NAME=<your username> # optional
 PW=<your password> # optional, I wouldn't put it here
 ```
+
+## Dependencies
+
+- curl
+- openssl
+- jq
