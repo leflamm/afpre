@@ -95,10 +95,10 @@ PROMPT_COMMAND="{
         }
 }"
 
-PS1="(${ACCOUNT}/${ROLE}) $PS1"
+PS1="(${ACCOUNT}/${ROLE}) \$PS1"
 EOF
 
-echo "** starting bash"
+echo "starting bash"
 
 RCFILE=$(mktemp)
 echo "${RC}" > $RCFILE
