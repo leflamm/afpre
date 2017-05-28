@@ -34,6 +34,7 @@ PW=<your password> # optional, I wouldn't put it here
 
 ## Dependencies
 
-- curl
-- openssl
-- jq
+- bash (tested: 4.3.48(1)-release)
+- curl (tested: 7.47.0)
+- openssl (tested: 1.0.2g)
+- jq (tested: jq-1.5-1-a5b5cbe)
