@@ -81,8 +81,12 @@ json_value() {
         jq -r ."\${2}" <<<"\${1}"
 }
 
+token_renew_interval() {
+	echo \${RENEW_INT:-\$((\$AWS_VALID_SECONDS - 100 ))}
+}
+
 PROMPT_COMMAND="{
-        ((\\\$SECONDS >= \\\$((\\\$AWS_VALID_SECONDS)) - 100)) && {
+        ((\\\$SECONDS >= \\\$(token_renew_interval) )) && {
                 echo token expired - need to renew... 
                 echo authenticating as ${NAME} for ${ACCOUNT}/${ROLE} against ${HOST}
                 JSON=\\\$(basic_auth https://${HOST}${_PATH}/${ACCOUNT}/${ROLE} ${X1XBN02R}) || error_msg \"... failed!\"
@@ -91,6 +95,7 @@ PROMPT_COMMAND="{
                 export AWS_SESSION_TOKEN=\\\$(json_value \"\\\${JSON}\" Token)
                 export AWS_SECURITY_TOKEN=\\\$(json_value \"\\\${JSON}\" Token)
                 export AWS_VALID_SECONDS=\\\$((\\\$(date -d \\\$(json_value \"\\\${JSON}\" Expiration) +%s)-\\\$(date +%s)))
+		SECONDS=0
                 echo done.
         }
 }"
@@ -103,4 +108,4 @@ echo "starting bash"
 RCFILE=$(mktemp)
 echo "${RC}" > $RCFILE
 
-AWS_VALID_SECONDS=0 bash --rcfile $RCFILE
+AWS_VALID_SECONDS=0 RENEW_INT=$RENEW_INT bash --rcfile $RCFILE
