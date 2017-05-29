@@ -3,7 +3,7 @@ Simple script to access the AWS Federation Proxy (AFP). Its main use case is sta
 Inspired by https://github.com/ImmobilienScout24/afp-cli
 
 ## Expired Tokens
-The started `bash` will notice itself when the AWS tokens expire. It will then renew the necessary tokens itself. No need to log out and in again.
+The started `bash` will notice when the AWS tokens expire. It will then renew the necessary tokens itself. No need to log out and in again.
 
 ```
 $ ./afpre 

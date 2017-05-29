@@ -64,10 +64,6 @@ do
     [ -f "\${F}" ] && . "\${F}"
 done
 
-variable_empty() {
-        [ -z "\${1}" ]
-}
-
 error_msg() {
         echo \$1
         exit 1
