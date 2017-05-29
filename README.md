@@ -30,6 +30,7 @@ HOST=<your afp host>
 _PATH=<your path to service endpoint, typically "/afp-api/latest/account">
 NAME=<your username> # optional
 PW=<your password> # optional, I wouldn't put it here
+RENEW_INT=<custom token renew interval> # optional, defaults to token's expiry
 ```
 
 ## Dependencies
