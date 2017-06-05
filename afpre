@@ -1,6 +1,5 @@
 #!/bin/bash
 
-#set -x
 set -e
 
 ### definitions
@@ -45,6 +44,7 @@ usage: ${0} [OPTIONS]
 OPTIONS
   --help        ... print this help
   --example-cfg ... create an example config file at ${CFG}
+  --debug       ... enable debugging
 EOF
 	echo "${HELP}"
 	exit 1
@@ -67,8 +67,13 @@ EOF
 	exit 0
 }
 
+DEBUG=false
+
 options_contain '--help' "$@" && do_help
 options_contain '--example-cfg' "$@" && do_example_cfg
+options_contain '--debug' "$@" && DEBUG=true
+
+$DEBUG && set -x
 
 check_dep curl
 check_dep jq
@@ -93,7 +98,7 @@ variable_empty "${PW}" && {
 X1XBN02R=$(encode64 "${NAME}:${PW}")
 
 ! read -r -d '' RC <<EOF
-#set -x
+$DEBUG && set -x
 
 for F in /etc/bash.bashrc ~/.bashrc
 do
