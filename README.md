@@ -33,6 +33,8 @@ PW=<your password> # optional, I wouldn't put it here
 RENEW_INT=<custom token renew interval> # optional, defaults to token's expiry
 ```
 
+Use option `--example-cfg` to create an example configuration file.
+
 ## Dependencies
 
 - bash (tested: 4.3.48(1)-release)
