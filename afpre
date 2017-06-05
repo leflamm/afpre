@@ -34,6 +34,42 @@ variable_empty() {
 	[ -z "${1}" ]
 }
 
+options_contain() {
+	grep -q -- "${1}" <<< "${@:2}"
+}
+
+do_help() {
+	! read -d '' HELP <<EOF
+usage: ${0} [OPTIONS]
+
+OPTIONS
+  --help        ... print this help
+  --example-cfg ... create an example config file at ${CFG}
+EOF
+	echo "${HELP}"
+	exit 1
+}
+
+do_example_cfg() {
+	[ -f ${CFG} ] && {
+		echo saving existing ${CFG} to ${CFG}.bak
+		mv ${CFG} ${CFG}.bak
+	}
+	! read -d '' XCFG <<EOF
+ACCOUNT=my.account
+ROLE=my.role
+HOST=my.afp.host
+_PATH=/afp-api/latest/account
+#NAME=my.name
+#PW=my.password # I wouldn't put it here
+EOF
+	echo "${XCFG}" > ${CFG}
+	exit 0
+}
+
+options_contain '--help' "$@" && do_help
+options_contain '--example-cfg' "$@" && do_example_cfg
+
 check_dep curl
 check_dep jq
 check_dep openssl
@@ -98,8 +134,6 @@ PROMPT_COMMAND="{
 
 PS1="AFP| \$PS1"
 EOF
-
-echo "starting bash"
 
 RCFILE=$(mktemp)
 echo "${RC}" > $RCFILE
