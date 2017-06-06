@@ -100,7 +100,7 @@ X1XBN02R=$(encode64 "${NAME}:${PW}")
 ! read -r -d '' RC <<EOF
 $DEBUG && set -x
 
-for F in /etc/bash.bashrc ~/.bashrc
+for F in /etc/bash.bashrc /etc/bashrc ~/.bashrc
 do
     [ -f "\${F}" ] && . "\${F}"
 done
@@ -122,6 +122,19 @@ token_renew_interval() {
 	echo \${RENEW_INT:-\$((\$AWS_VALID_SECONDS - 100 ))}
 }
 
+on_mac() {
+	[ \$(uname -s) == Darwin ]
+}
+
+secs_since_epoch() {
+	on_mac && {
+		NOZULU=\$(sed 's/Z\$/GMT/g' <<< \${1})
+		date -jf %Y-%m-%dT%H:%M:%S%Z \${NOZULU} +%s
+	} || {
+		date -d \${1} +%s
+	}
+}
+
 PROMPT_COMMAND="{
         ((\\\$SECONDS >= \\\$(token_renew_interval) )) && {
                 echo token expired - need to renew... 
@@ -131,7 +144,7 @@ PROMPT_COMMAND="{
                 export AWS_SECRET_ACCESS_KEY=\\\$(json_value \"\\\${JSON}\" SecretAccessKey)
                 export AWS_SESSION_TOKEN=\\\$(json_value \"\\\${JSON}\" Token)
                 export AWS_SECURITY_TOKEN=\\\$(json_value \"\\\${JSON}\" Token)
-                export AWS_VALID_SECONDS=\\\$((\\\$(date -d \\\$(json_value \"\\\${JSON}\" Expiration) +%s)-\\\$(date +%s)))
+                export AWS_VALID_SECONDS=\\\$((\\\$(secs_since_epoch \\\$(json_value \"\\\${JSON}\" Expiration))-\\\$(date +%s)))
 		SECONDS=0
                 echo done.
         }
