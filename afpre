@@ -100,7 +100,7 @@ X1XBN02R=$(encode64 "${NAME}:${PW}")
 ! read -r -d '' RC <<EOF
 $DEBUG && set -x
 
-for F in /etc/bash.bashrc ~/.bashrc
+for F in /etc/bash.bashrc /etc/bashrc ~/.bashrc
 do
     [ -f "\${F}" ] && . "\${F}"
 done
