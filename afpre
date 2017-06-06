@@ -128,7 +128,8 @@ on_mac() {
 
 secs_since_epoch() {
 	on_mac && {
-		date -jf %Y-%m-%dT%H:%M:%SZ \${1} +%s
+		NOZULU=\$(sed 's/Z\$/GMT/g' <<< \${1})
+		date -jf %Y-%m-%dT%H:%M:%SZ \${NOZULU} +%s
 	} || {
 		date -d \${1} +%s
 	}
