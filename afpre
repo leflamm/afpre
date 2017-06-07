@@ -151,7 +151,7 @@ PROMPT_COMMAND="{
         }
 }"
 
-PS1="AFP| \$PS1"
+PS1="AFP|${ACCOUNT}|${ROLE} \$PS1"
 EOF
 
 RCFILE=$(mktemp)
