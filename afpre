@@ -47,7 +47,7 @@ OPTIONS
   --debug       ... enable debugging
 EOF
 	echo "${HELP}"
-	exit 1
+	exit 0
 }
 
 do_example_cfg() {
@@ -64,6 +64,7 @@ _PATH=/afp-api/latest/account
 #PW=my.password # I wouldn't put it here
 EOF
 	echo "${XCFG}" > ${CFG}
+	echo $CFG written
 	exit 0
 }
 
