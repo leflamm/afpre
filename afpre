@@ -42,9 +42,10 @@ do_help() {
 usage: ${0} [OPTIONS]
 
 OPTIONS
-  --help        ... print this help
-  --example-cfg ... create an example config file at ${CFG}
-  --debug       ... enable debugging
+  --help                    ... print this help
+  --account ACCOUNT_NAME    ... authenticate towards this account name
+  --example-cfg             ... create an example config file at ${CFG}
+  --debug                   ... enable debugging
 EOF
 	echo "${HELP}"
 	exit 0
@@ -71,6 +72,7 @@ EOF
 DEBUG=false
 
 options_contain '--help' "$@" && do_help
+options_contain '--account' "$@" && ACCOUNT_NAME="${2}"
 options_contain '--example-cfg' "$@" && do_example_cfg
 options_contain '--debug' "$@" && DEBUG=true
 
@@ -80,12 +82,18 @@ check_dep curl
 check_dep jq
 check_dep openssl
 check_config_file
-check_config_key ACCOUNT
+if [ -z ${ACCOUNT_NAME+x} ]; then
+    check_config_key ACCOUNT
+fi
 check_config_key ROLE
 check_config_key _PATH
 check_config_key HOST
 
 source $CFG
+
+if [ ! -z ${ACCOUNT_NAME+x} ]; then
+    ACCOUNT="${ACCOUNT_NAME}"
+fi
 
 variable_empty "${NAME}" && {
 	echo -n "username: " && read NAME
