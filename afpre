@@ -61,6 +61,7 @@ ACCOUNT=my.account
 ROLE=my.role
 HOST=my.afp.host
 _PATH=/afp-api/latest/account
+#PATTERN="\${ACCOUNT}|\${ROLE}" # This will appear in front of the prompt
 #NAME=my.name
 #PW=my.password # I wouldn't put it here
 EOF
@@ -159,7 +160,7 @@ PROMPT_COMMAND="{
         }
 }"
 
-PS1="AFP|${ACCOUNT}|${ROLE} \$PS1"
+PS1="AFP|${PATTERN} \$PS1"
 EOF
 
 RCFILE=$(mktemp)
