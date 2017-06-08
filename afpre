@@ -43,7 +43,7 @@ usage: ${0} [OPTIONS]
 
 OPTIONS
   --help                    ... print this help
-  --account=<my.account>    ... authenticate towards this account, superceeds
+  --account=<my.account>    ... authenticate towards this account, supersedes
 				any definition in ${CFG} 
   --example-cfg             ... create an example config file at ${CFG}
   --debug                   ... enable debugging
@@ -57,7 +57,8 @@ do_example_cfg() {
 		echo saving existing ${CFG} to ${CFG}.bak
 		mv ${CFG} ${CFG}.bak
 	}
-	! read -d '' XCFG <<EOF
+	
+	cat > $CFG << EOF
 ACCOUNT=my.account
 ROLE=my.role
 HOST=my.afp.host
@@ -66,19 +67,18 @@ _PATH=/afp-api/latest/account
 #NAME=my.name
 #PW=my.password # I wouldn't put it here
 EOF
-	echo "${XCFG}" > ${CFG}
 	echo $CFG written
 	exit 0
 }
 
-do_superceed_account() {
-	ADHOC_ACCOUNT=$(grep -o -- "--account=[^ ]*" <<< "$@"| cut -d"=" -f2)
+longoption_value() {
+	grep -o -- "--${1}=[^ ]*" <<< "${@:2}"| cut -d"=" -f2	
 }
 
 DEBUG=false
 
 options_contain '--help' "$@" && do_help
-options_contain '--account' "$@" && do_superceed_account "$@"
+options_contain '--account' "$@" && ADHOC_ACCOUNT=$(longoption_value account "${@}")
 options_contain '--example-cfg' "$@" && do_example_cfg
 options_contain '--debug' "$@" && DEBUG=true
 
@@ -96,20 +96,20 @@ check_config_key HOST
 source $CFG
 
 variable_empty "${ADHOC_ACCOUNT}" || ACCOUNT="${ADHOC_ACCOUNT}"
-
-variable_empty "${NAME}" && {
-	echo -n "username: " && read NAME
-}
-
+variable_empty "${NAME}" && read -p "username: " NAME
 variable_empty "${PW}" && {
-	echo -n "password: " && read -s PW
+	read -p "password: " -s PW
 	echo
 }
 
 X1XBN02R=$(encode64 "${NAME}:${PW}")
+RCFILE=$(mktemp)
 
-! read -r -d '' RC <<EOF
+cat > $RCFILE <<EOF
 $DEBUG && set -x
+
+AWS_VALID_SECONDS=0 
+RENEW_INT=$RENEW_INT 
 
 for F in /etc/bash.bashrc /etc/bashrc ~/.bashrc ~/.profile
 do
@@ -164,7 +164,4 @@ PROMPT_COMMAND="{
 PS1="AFP|${PATTERN} \$PS1"
 EOF
 
-RCFILE=$(mktemp)
-echo "${RC}" > $RCFILE
-
-AWS_VALID_SECONDS=0 RENEW_INT=$RENEW_INT bash --rcfile $RCFILE
+bash --rcfile $RCFILE
