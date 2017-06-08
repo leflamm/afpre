@@ -43,7 +43,8 @@ usage: ${0} [OPTIONS]
 
 OPTIONS
   --help                    ... print this help
-  --account ACCOUNT_NAME    ... authenticate towards this account name
+  --account=<my.account>    ... authenticate towards this account, superceeds
+				any definition in ${CFG} 
   --example-cfg             ... create an example config file at ${CFG}
   --debug                   ... enable debugging
 EOF
@@ -70,10 +71,14 @@ EOF
 	exit 0
 }
 
+do_superceed_account() {
+	ADHOC_ACCOUNT=$(grep -o -- "--account=[^ ]*" <<< "$@"| cut -d"=" -f2)
+}
+
 DEBUG=false
 
 options_contain '--help' "$@" && do_help
-options_contain '--account' "$@" && ACCOUNT_NAME="${2}"
+options_contain '--account' "$@" && do_superceed_account "$@"
 options_contain '--example-cfg' "$@" && do_example_cfg
 options_contain '--debug' "$@" && DEBUG=true
 
@@ -83,18 +88,14 @@ check_dep curl
 check_dep jq
 check_dep openssl
 check_config_file
-if [ -z ${ACCOUNT_NAME+x} ]; then
-    check_config_key ACCOUNT
-fi
+variable_empty "${ADHOC_ACCOUNT}" && check_config_key ACCOUNT
 check_config_key ROLE
 check_config_key _PATH
 check_config_key HOST
 
 source $CFG
 
-if [ ! -z ${ACCOUNT_NAME+x} ]; then
-    ACCOUNT="${ACCOUNT_NAME}"
-fi
+variable_empty "${ADHOC_ACCOUNT}" || ACCOUNT="${ADHOC_ACCOUNT}"
 
 variable_empty "${NAME}" && {
 	echo -n "username: " && read NAME
