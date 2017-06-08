@@ -7,7 +7,6 @@ The started `bash` will notice when the AWS tokens are about to expire. It will 
 
 ```
 $ ./afpre 
-starting bash
 token expired - need to renew...
 authenticating as some.user for some.account/some.role against some.afp.host
 done.
