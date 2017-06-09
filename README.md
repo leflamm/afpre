@@ -33,6 +33,7 @@ NAME=<your username> # optional
 PW=<your password> # optional, I wouldn't put it here
 PATTERN="${ACCOUNT}|${ROLE}" # optional, the message you want to see in front of the prompt
 RENEW_INT=<custom token renew interval> # optional, defaults to token's expiry
+INSECURE=<true|false> # optional, perform "insecure" SSL connections, defaults to false
 ```
 
 Use option `--example-cfg` to create an example configuration file.
