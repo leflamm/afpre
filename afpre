@@ -88,6 +88,7 @@ options_contain '--debug' "$@" && DEBUG=true
 
 $DEBUG && set -x
 
+check_dep which
 check_dep curl
 check_dep jq
 check_dep openssl
