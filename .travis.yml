@@ -4,7 +4,6 @@ before_install:
   - rvm install 1.9.3
   - gem install --no-ri --no-rdoc fpm
 script:
-  - if [ -z "${TRAVIS_TAG}" ]; then exit 0; fi
   - fpm -v ${TRAVIS_TAG} -n afpre -a all -t deb -d jq -d bash -d openssl -d curl -s dir afpre=/usr/bin/afpre
 deploy:
   skip_cleanup: true
@@ -16,4 +15,3 @@ deploy:
     tags: true
     repo: leflamm/afpre
     branch: master
-    condition: ! -z "${TRAVIS_TAG}"
