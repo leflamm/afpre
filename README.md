@@ -42,3 +42,4 @@ Use option `--example-cfg` to create an example configuration file.
 See https://github.com/leflamm/afpre/releases
 
 - .deb
+- .rpm
