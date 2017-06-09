@@ -37,9 +37,8 @@ RENEW_INT=<custom token renew interval> # optional, defaults to token's expiry
 
 Use option `--example-cfg` to create an example configuration file.
 
-## Dependencies
+## Available Packages
 
-- bash (tested: 4.3.48(1)-release)
-- curl (tested: 7.47.0)
-- openssl (tested: 1.0.2g)
-- jq (tested: jq-1.5-1-a5b5cbe)
+See https://github.com/leflamm/afpre/releases
+
+- .deb
