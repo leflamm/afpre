@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/leflamm/afpre.svg?branch=master)](https://travis-ci.org/leflamm/afpre)
+
 Simple script to access the AWS Federation Proxy (AFP). Its main use case is starting a new shell where your temporary AWS credentials have been exported into the environment.
 
 Inspired by https://github.com/ImmobilienScout24/afp-cli
