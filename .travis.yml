@@ -17,6 +17,3 @@ deploy:
     repo: leflamm/afpre
     branch: master
     condition: -z "${TRAVIS_TAG}"
-branches:
-  only:
-  - master
