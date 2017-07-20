@@ -4,6 +4,7 @@ before_install:
   - rvm install 1.9.3
   - gem install --no-ri --no-rdoc fpm
 script:
+  - sed -i "s/VERSION_PLACEHOLDER/${TRAVIS_TAG}/g" afpre
   - fpm -v ${TRAVIS_TAG} -n afpre -a all -t deb -d jq -d bash -d openssl -d curl --description "CLI for the AWS Federation Proxy" --url "https://github.com/leflamm/afpre" --license "Apache License 2.0" -s dir afpre=/usr/bin/afpre
   - fpm -v ${TRAVIS_TAG} -n afpre -a all -t rpm -d jq -d bash -d openssl -d curl -d which --description "CLI for the AWS Federation Proxy" --url "https://github.com/leflamm/afpre" --license "Apache License 2.0" -s dir afpre=/usr/bin/afpre
 deploy:

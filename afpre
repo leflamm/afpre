@@ -1,4 +1,5 @@
 #!/bin/bash
+VERSION=VERSION_PLACEHOLDER
 
 set -e
 
@@ -41,6 +42,11 @@ options_contain() {
 	grep -q -- "${1}" <<< "${@:2}"
 }
 
+do_version() {
+	echo $VERSION
+	exit 0
+}
+
 do_help() {
 	! read -d '' HELP <<EOF
 usage: ${0} [OPTIONS]
@@ -51,6 +57,7 @@ OPTIONS
 				any definition in ${CFG} 
   --example-cfg             ... create an example config file at ${CFG}
   --debug                   ... enable debugging
+  --version                 ... print version
 EOF
 	echo "${HELP}"
 	exit 0
@@ -82,6 +89,7 @@ longoption_value() {
 DEBUG=false
 
 options_contain '--help' "$@" && do_help
+options_contain '--version' "$@" && do_version
 options_contain '--account' "$@" && ADHOC_ACCOUNT=$(longoption_value account "${@}")
 options_contain '--example-cfg' "$@" && do_example_cfg
 options_contain '--debug' "$@" && DEBUG=true
