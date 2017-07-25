@@ -129,7 +129,8 @@ $DEBUG && set -x
 AWS_VALID_SECONDS=0 
 RENEW_INT=$RENEW_INT 
 ACCOUNT=$ACCOUNT
-ROLE=$ROLE
+export AWS_ACCOUNT=$ACCOUNT
+export AWS_ROLE=$ROLE
 
 for F in /etc/bash.bashrc /etc/bashrc ~/.bashrc ~/.profile
 do
