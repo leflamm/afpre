@@ -31,7 +31,7 @@ HOST=<your afp host>
 _PATH=<your path to service endpoint, typically "/afp-api/latest/account">
 NAME=<your username> # optional
 PW=<your password> # optional, I wouldn't put it here
-PATTERN="${ACCOUNT}|${ROLE}" # optional, the message you want to see in front of the prompt
+PATTERN=\${ACCOUNT}/\${ROLE} # optional, the message you want to see in front of the prompt
 RENEW_INT=<custom token renew interval> # optional, defaults to token's expiry
 INSECURE=<true|false> # optional, perform "insecure" SSL connections, defaults to false
 ```
