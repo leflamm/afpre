@@ -14,8 +14,11 @@ error_msg() {
 	exit 1
 }
 
-check_dep() {
-	which "${1}" &> /dev/null || error_msg "executable '$1' no found in your \$PATH"
+check_deps() {
+	for D in $*
+	do
+		which "${D}" &> /dev/null || error_msg "executable '$D' no found in your \$PATH"
+	done
 }
 
 encode64() {
@@ -39,7 +42,7 @@ variable_true() {
 }
 
 options_contain() {
-	grep -q -- "${1}" <<< "${@:2}"
+	grep -q -- "${1}" <<< $ARGS
 }
 
 do_version() {
@@ -83,23 +86,21 @@ EOF
 }
 
 longoption_value() {
-	grep -o -- "--${1}=[^ ]*" <<< "${@:2}"| cut -d"=" -f2	
+	grep -o -- "--${1}=[^ ]*" <<< $ARGS| cut -d"=" -f2	
 }
 
 DEBUG=false
+ARGS="${@}"
 
-options_contain '--help' "$@" && do_help
-options_contain '--version' "$@" && do_version
-options_contain '--account' "$@" && ADHOC_ACCOUNT=$(longoption_value account "${@}")
-options_contain '--example-cfg' "$@" && do_example_cfg
-options_contain '--debug' "$@" && DEBUG=true
+options_contain '--help' && do_help
+options_contain '--version' && do_version
+options_contain '--account' && ADHOC_ACCOUNT=$(longoption_value account)
+options_contain '--example-cfg' && do_example_cfg
+options_contain '--debug' && DEBUG=true
 
 $DEBUG && set -x
 
-check_dep which
-check_dep curl
-check_dep jq
-check_dep openssl
+check_deps which curl jq openssl
 check_config_file
 variable_empty "${ADHOC_ACCOUNT}" && check_config_key ACCOUNT
 check_config_key ROLE
