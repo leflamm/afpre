@@ -20,6 +20,7 @@ authenticating as some.user for some.account/some.role against some.afp.host
 done.
 AFP| ~/git/hub/afpre$ # do some more work ...
 ```
+You can type `awsenv` to print aws-specific environment information.
 
 ## Configuration
 
