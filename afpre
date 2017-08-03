@@ -52,7 +52,7 @@ do_version() {
 
 do_help() {
 	! read -d '' HELP <<EOF
-usage: ${0} [OPTIONS]
+usage: ${0} [OPTIONS] (-- COMMAND)
 
 OPTIONS
   --help                    ... print this help
@@ -89,6 +89,10 @@ longoption_value() {
 	grep -o -- "--${1}=[^ ]*" <<< $ARGS| cut -d"=" -f2	
 }
 
+get_command() {
+	grep -o -- '-- .*' <<< ${ARGS} | sed 's/^-- //g'
+}
+
 DEBUG=false
 ARGS="${@}"
 
@@ -119,6 +123,11 @@ variable_empty "${PW}" && {
 variable_true "${INSECURE}" && {
 	INSECURE_OPTION="--insecure"
 	echo WARNING: configured to perform \"insecure\" SSL connections and transfers
+}
+
+ADHOC_CMD=$(get_command)
+variable_empty "${ADHOC_CMD}" || {
+	CMD_AND_EXIT="eval \"\${PROMPT_COMMAND}\";${ADHOC_CMD};exit"
 }
 
 X1XBN02R=$(encode64 "${NAME}:${PW}")
@@ -189,6 +198,8 @@ PROMPT_COMMAND="{
 }"
 
 PS1="AFP|${PATTERN} \$PS1"
+
+$CMD_AND_EXIT
 EOF
 
 bash --rcfile $RCFILE
