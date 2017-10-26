@@ -42,7 +42,7 @@ variable_true() {
 }
 
 options_contain() {
-	grep -q -- "${1}" <<< $ARGS
+	grep -q -- "${1}" <<< ${ARGS%-- *}
 }
 
 do_version() {
