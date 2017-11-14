@@ -183,6 +183,9 @@ awsenv() {
 }
 
 PROMPT_COMMAND="{
+		# also call original one
+		${PROMPT_COMMAND}
+
         ((\\\$SECONDS >= \\\$(token_renew_interval) )) && {
                 echo token expired - need to renew... 
                 echo authenticating as ${NAME} for ${ACCOUNT}/${ROLE} against ${HOST}
