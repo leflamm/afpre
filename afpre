@@ -203,6 +203,8 @@ condrenew() {
 
 PROMPT_COMMAND=condrenew
 
+export -f renew basic_auth error_msg json_value secs_since_epoch on_mac
+
 PS1="AFP|${PATTERN} \$PS1"
 
 $CMD_AND_EXIT
