@@ -179,7 +179,7 @@ secs_since_epoch() {
 }
 
 awsenv() {
-	env | grep -i --color=never aws
+	env | grep -i --color=never ^aws
 }
 
 renew() {
