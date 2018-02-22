@@ -33,6 +33,16 @@ $ condrenew
 $ renew
 ```
 You can call `awsenv` to check for your current AWS credentials.
+```
+AFP| ~/git/hub/afpre$ awsenv 
+AWS_ROLE=admin
+AWS_SECRET_ACCESS_KEY=...
+AWS_VALID_SECONDS=3600
+AWS_ACCOUNT=...
+AWS_SESSION_TOKEN=...
+AWS_ACCESS_KEY_ID=...
+AWS_SECURITY_TOKEN=...
+```
 
 ## Configuration
 
