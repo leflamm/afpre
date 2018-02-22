@@ -193,13 +193,15 @@ renew() {
 	SECONDS=0
 }
 
-PROMPT_COMMAND="{
-        ((\\\$SECONDS >= \\\$(token_renew_interval) )) && {
+condrenew() {
+        ((\$SECONDS >= \$(token_renew_interval) )) && {
                 echo token expired - need to renew... 
 		renew
                 echo done.
         }
-}"
+}
+
+PROMPT_COMMAND=condrenew
 
 PS1="AFP|${PATTERN} \$PS1"
 
