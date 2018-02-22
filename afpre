@@ -182,7 +182,7 @@ awsenv() {
 	env | grep -i --color=never aws
 }
 
-fetchport() {
+renew() {
 	echo authenticating as ${NAME} for ${ACCOUNT}/${ROLE} against ${HOST}
 	JSON=\$(basic_auth https://${HOST}${_PATH}/${ACCOUNT}/${ROLE} ${X1XBN02R}) || error_msg "... failed!"
 	export AWS_ACCESS_KEY_ID=\$(json_value "\${JSON}" AccessKeyId)
@@ -196,7 +196,7 @@ fetchport() {
 PROMPT_COMMAND="{
         ((\\\$SECONDS >= \\\$(token_renew_interval) )) && {
                 echo token expired - need to renew... 
-		fetchport
+		renew
                 echo done.
         }
 }"
