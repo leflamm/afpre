@@ -22,6 +22,18 @@ AFP| ~/git/hub/afpre$ # do some more work ...
 ```
 You can type `awsenv` to print aws-specific environment information.
 
+## Manual Renewal
+
+Whithin an `afpre` session you can - if you feel the need - manually trigger a token renewal. Either only if your old tokens have expired ...
+```
+$ condrenew
+```
+... or even unconditionally by calling
+```
+$ renew
+```
+You can call `awsenv` to check for your current AWS credentials.
+
 ## Configuration
 
 ```
