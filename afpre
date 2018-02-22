@@ -182,17 +182,21 @@ awsenv() {
 	env | grep -i --color=never aws
 }
 
+fetchport() {
+	echo authenticating as ${NAME} for ${ACCOUNT}/${ROLE} against ${HOST}
+	JSON=\$(basic_auth https://${HOST}${_PATH}/${ACCOUNT}/${ROLE} ${X1XBN02R}) || error_msg "... failed!"
+	export AWS_ACCESS_KEY_ID=\$(json_value "\${JSON}" AccessKeyId)
+	export AWS_SECRET_ACCESS_KEY=\$(json_value "\${JSON}" SecretAccessKey)
+	export AWS_SESSION_TOKEN=\$(json_value "\${JSON}" Token)
+	export AWS_SECURITY_TOKEN=\$(json_value "\${JSON}" Token)
+	export AWS_VALID_SECONDS=\$((\$(secs_since_epoch \$(json_value "\${JSON}" Expiration))-\$(date +%s)))
+	SECONDS=0
+}
+
 PROMPT_COMMAND="{
         ((\\\$SECONDS >= \\\$(token_renew_interval) )) && {
                 echo token expired - need to renew... 
-                echo authenticating as ${NAME} for ${ACCOUNT}/${ROLE} against ${HOST}
-                JSON=\\\$(basic_auth https://${HOST}${_PATH}/${ACCOUNT}/${ROLE} ${X1XBN02R}) || error_msg \"... failed!\"
-                export AWS_ACCESS_KEY_ID=\\\$(json_value \"\\\${JSON}\" AccessKeyId)
-                export AWS_SECRET_ACCESS_KEY=\\\$(json_value \"\\\${JSON}\" SecretAccessKey)
-                export AWS_SESSION_TOKEN=\\\$(json_value \"\\\${JSON}\" Token)
-                export AWS_SECURITY_TOKEN=\\\$(json_value \"\\\${JSON}\" Token)
-                export AWS_VALID_SECONDS=\\\$((\\\$(secs_since_epoch \\\$(json_value \"\\\${JSON}\" Expiration))-\\\$(date +%s)))
-		SECONDS=0
+		fetchport
                 echo done.
         }
 }"
