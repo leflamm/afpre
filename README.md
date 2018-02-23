@@ -44,6 +44,8 @@ AWS_ACCESS_KEY_ID=...
 AWS_SECURITY_TOKEN=...
 ```
 
+In case you find that `condrenew` command somewhat useless you got it pretty much right - because that's what `afpre` does anyway. But since version `0.9.15` both commands are available for subprocesses as well. So even (e. g.) running scripts could trigger their own token renewals.
+
 ## Configuration
 
 ```
