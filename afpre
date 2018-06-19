@@ -194,11 +194,11 @@ renew() {
 }
 
 condrenew() {
-        ((\$SECONDS >= \$(token_renew_interval) )) && {
-                echo token expired - need to renew... 
+	(( \$SECONDS >= \$(token_renew_interval) )) || (( \${AWS_VALID_SECONDS} == 0 )) && {
+		echo token expired - need to renew...
 		renew
-                echo done.
-        }
+		echo done.
+	}
 }
 
 PROMPT_COMMAND=condrenew
