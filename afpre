@@ -56,7 +56,9 @@ usage: ${0} [OPTIONS] (-- COMMAND)
 
 OPTIONS
   --help                    ... print this help
-  --account=<my.account>    ... authenticate towards this account, supersedes
+  --account=<my.account>    ... authenticate for this account, supersedes
+				any definition in ${CFG} 
+  --role=<my.role>          ... authenticate as this role, supersedes
 				any definition in ${CFG} 
   --example-cfg             ... create an example config file at ${CFG}
   --debug                   ... enable debugging
@@ -99,6 +101,7 @@ ARGS="${@}"
 options_contain '--help' && do_help
 options_contain '--version' && do_version
 options_contain '--account' && ADHOC_ACCOUNT=$(longoption_value account)
+options_contain '--role' && ADHOC_ROLE=$(longoption_value role)
 options_contain '--example-cfg' && do_example_cfg
 options_contain '--debug' && DEBUG=true
 
@@ -107,6 +110,7 @@ $DEBUG && set -x
 check_deps which curl jq openssl
 check_config_file
 variable_empty "${ADHOC_ACCOUNT}" && check_config_key ACCOUNT
+variable_empty "${ADHOC_ROLE}" && check_config_key ROLE
 check_config_key ROLE
 check_config_key _PATH
 check_config_key HOST
@@ -114,6 +118,7 @@ check_config_key HOST
 source $CFG
 
 variable_empty "${ADHOC_ACCOUNT}" || ACCOUNT="${ADHOC_ACCOUNT}"
+variable_empty "${ADHOC_ROLE}" || ROLE="${ADHOC_ROLE}"
 variable_empty "${NAME}" && read -p "username: " NAME
 variable_empty "${PW}" && {
 	read -p "password: " -s PW
