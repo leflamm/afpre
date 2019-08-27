@@ -46,6 +46,17 @@ AWS_SECURITY_TOKEN=...
 
 In case you find that `condrenew` command somewhat useless you got it pretty much right - because that's what `afpre` does anyway. But since version `0.9.15` both commands are available for subprocesses as well. So even (e. g.) running scripts could trigger their own token renewals.
 
+## Run Commands in an afpre Session
+
+You can pass commands to `afpre` after a separating `--`. The session will close immediatly after the command has exited. Typically this is very usefull when iterating over accounts and running a command in all of them.
+
+```
+$ ./afpre [OPTIONS] -- <command>
+```
+
+Commands can also be Bash functions. Make sure to export them using `export -f <function name>` to make them available in the afpre session.
+
+
 ## Configuration
 
 ```
