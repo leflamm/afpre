@@ -116,7 +116,7 @@ variable_empty "${ADHOC_ACCOUNT}" && check_config_key ACCOUNT
 variable_empty "${ADHOC_ROLE}" && check_config_key ROLE
 check_config_key ROLE
 check_config_key _PATH
-check_config_key HOST
+! "${AWS_NATIVE}" && check_config_key HOST
 
 source $CFG
 
