@@ -1,8 +1,20 @@
 [![Build Status](https://travis-ci.org/leflamm/afpre.svg?branch=master)](https://travis-ci.org/leflamm/afpre) [![GitHub release](https://img.shields.io/github/release/leflamm/afpre.svg)](https://github.com/leflamm/afpre/releases/latest)
 
-Simple script to access the AWS Federation Proxy (AFP). Its main use case is starting a new shell where your temporary AWS credentials have been exported into the environment.
+Simple script to access the [AWS Federation Proxy (AFP)](https://docs.aws.amazon.com/amp/latest/userguide/install-option-connector.html) or [AWS Security Token Service (STS)](https://docs.aws.amazon.com/STS/latest/APIReference/Welcome.html). Its main use case is starting a new shell where your temporary AWS credentials have been exported into the environment.
 
 Inspired by https://github.com/ImmobilienScout24/afp-cli
+
+# Flavours
+
+## AWS Federation Proxy (AFP)
+
+When used with an AFP server, performs basic auth towards the configured host, obtains and extracts temporary credentials.
+
+## AWS Security Token Service
+
+When used with the AWS STS, performs `aws sts assume-role` call with configured role and account, obtains and extracts temporary credentials.
+
+# Features
 
 ## No Expired Tokens
 The started `bash` will notice when the AWS tokens are about to expire. It will then renew the necessary tokens itself. No need to log out and in again.
@@ -63,7 +75,7 @@ Commands can also be Bash functions. Make sure to export them using `export -f <
 $ cat ~/.afpre 
 ACCOUNT=<your desired account>
 ROLE=<your desired role>
-HOST=<your afp host>
+HOST=<your afp host> # not mandatory if STS mode used
 _PATH=<your path to service endpoint, typically "/afp-api/latest/account">
 NAME=<your username> # optional
 PW=<your password> # optional, I wouldn't put it here
