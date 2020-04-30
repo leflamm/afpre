@@ -57,10 +57,11 @@ usage: ${0} [OPTIONS] (-- COMMAND)
 OPTIONS
   --help                    ... print this help
   --account=<my.account>    ... authenticate for this account, supersedes
-				any definition in ${CFG} 
+				any definition in ${CFG}
   --role=<my.role>          ... authenticate as this role, supersedes
-				any definition in ${CFG} 
+				any definition in ${CFG}
   --example-cfg             ... create an example config file at ${CFG}
+  --sts                     ... go through aws sts login process instead of federation proxy
   --debug                   ... enable debugging
   --version                 ... print version
 EOF
@@ -73,11 +74,11 @@ do_example_cfg() {
 		echo saving existing ${CFG} to ${CFG}.bak
 		mv ${CFG} ${CFG}.bak
 	}
-	
+
 	cat > $CFG << EOF
 ACCOUNT=my.account
 ROLE=my.role
-HOST=my.afp.host
+HOST=my.afp.host # not mandatory if --sts used
 _PATH=/afp-api/latest/account
 #PATTERN=\\\${ACCOUNT}/\\\${ROLE} # This will appear in front of the prompt
 #NAME=my.name
@@ -88,7 +89,7 @@ EOF
 }
 
 longoption_value() {
-	grep -o -- "--${1}=[^ ]*" <<< $ARGS| cut -d"=" -f2	
+	grep -o -- "--${1}=[^ ]*" <<< $ARGS| cut -d"=" -f2
 }
 
 get_command() {
@@ -96,6 +97,7 @@ get_command() {
 }
 
 DEBUG=false
+AWS_NATIVE=false
 ARGS="${@}"
 
 options_contain '--help' && do_help
@@ -104,6 +106,7 @@ options_contain '--account' && ADHOC_ACCOUNT=$(longoption_value account)
 options_contain '--role' && ADHOC_ROLE=$(longoption_value role)
 options_contain '--example-cfg' && do_example_cfg
 options_contain '--debug' && DEBUG=true
+options_contain '--sts' && AWS_NATIVE=true
 
 $DEBUG && set -x
 
@@ -113,14 +116,15 @@ variable_empty "${ADHOC_ACCOUNT}" && check_config_key ACCOUNT
 variable_empty "${ADHOC_ROLE}" && check_config_key ROLE
 check_config_key ROLE
 check_config_key _PATH
-check_config_key HOST
+! "${AWS_NATIVE}" && check_config_key HOST
 
 source $CFG
 
 variable_empty "${ADHOC_ACCOUNT}" || ACCOUNT="${ADHOC_ACCOUNT}"
 variable_empty "${ADHOC_ROLE}" || ROLE="${ADHOC_ROLE}"
 variable_empty "${NAME}" && read -p "username: " NAME
-variable_empty "${PW}" && {
+
+! "${AWS_NATIVE}" && variable_empty "${PW}" && {
 	read -p "password: " -s PW
 	echo
 }
@@ -141,8 +145,8 @@ RCFILE=$(mktemp)
 cat > $RCFILE <<EOF
 $DEBUG && set -x
 
-AWS_VALID_SECONDS=0 
-RENEW_INT=$RENEW_INT 
+AWS_VALID_SECONDS=0
+RENEW_INT=$RENEW_INT
 ACCOUNT=$ACCOUNT
 ROLE=$ROLE
 export AWS_ACCOUNT=$ACCOUNT
@@ -194,15 +198,25 @@ ctrl_c () {
 renew() {
 	trap ctrl_c INT
 
-	echo authenticating as ${NAME} for ${ACCOUNT}/${ROLE} against ${HOST}
-	JSON=\$(basic_auth https://${HOST}${_PATH}/${ACCOUNT}/${ROLE} ${X1XBN02R}) || error_msg "... failed!"
-	export AWS_ACCESS_KEY_ID=\$(json_value "\${JSON}" AccessKeyId)
-	export AWS_SECRET_ACCESS_KEY=\$(json_value "\${JSON}" SecretAccessKey)
-	export AWS_SESSION_TOKEN=\$(json_value "\${JSON}" Token)
-	export AWS_SECURITY_TOKEN=\$(json_value "\${JSON}" Token)
-	export AWS_VALID_SECONDS=\$((\$(secs_since_epoch \$(json_value "\${JSON}" Expiration))-\$(date +%s)))
-	SECONDS=0
+    if [[ "${AWS_NATIVE}" == "true" ]]
+    then
+        echo authenticating as ${NAME} for ${ACCOUNT}/${ROLE}
+        JSON=\$(aws sts assume-role --role-arn arn:aws:iam::${ACCOUNT}:role/${ROLE} --role-session-name ${NAME}_session) || error_msg "... failed!"
+        export AWS_ACCESS_KEY_ID=\$(json_value "\${JSON}" Credentials.AccessKeyId)
+        export AWS_SECRET_ACCESS_KEY=\$(json_value "\${JSON}" Credentials.SecretAccessKey)
+        export AWS_SESSION_TOKEN=\$(json_value "\${JSON}" Credentials.SessionToken)
+        export AWS_VALID_SECONDS=\$((\$(secs_since_epoch \$(json_value "\${JSON}" Credentials.Expiration))-\$(date +%s)))
+    else
+        echo authenticating as ${NAME} for ${ACCOUNT}/${ROLE} against ${HOST}
+        JSON=\$(basic_auth https://${HOST}${_PATH}/${ACCOUNT}/${ROLE} ${X1XBN02R}) || error_msg "... failed!"
+        export AWS_ACCESS_KEY_ID=\$(json_value "\${JSON}" AccessKeyId)
+        export AWS_SECRET_ACCESS_KEY=\$(json_value "\${JSON}" SecretAccessKey)
+        export AWS_SESSION_TOKEN=\$(json_value "\${JSON}" Token)
+        export AWS_SECURITY_TOKEN=\$(json_value "\${JSON}" Token)
+        export AWS_VALID_SECONDS=\$((\$(secs_since_epoch \$(json_value "\${JSON}" Expiration))-\$(date +%s)))
+    fi
 
+	SECONDS=0
 	trap - INT
 }
 
