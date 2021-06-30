@@ -11,7 +11,7 @@ deploy:
   skip_cleanup: true
   provider: releases
   api_key:
-    secure: jyPamEciHWlBKOIxJgNcbzvff5r7JqpZUFe4YhhsjHYh5hr29Ante5/DJeJdl79e26Egdko+frV8sll5YyKA4qdIpPjEYZpg48wgviSvsf+hp10GGHAfgIKqxeW2GwA42gltSaSZmRR1lPulCttjdXsJirPVBQlV+yuc6LARqxhtN/O1gaHZeax58ePUV58bbGYieO5I3Fe8HzmWCAq52cXq+GsJltjd03M5JlZ4MdDWcusui36eRn0Cz9uAMf5vTMIbsEalwtTzDFWx+zjcjmwMxF/VG+NUG2To16UoQfu4TdjqRHxc7K5q8e0GqIATL+7cmEzVNrBo52ElLoeRY7WOAOq7BKDxbrquJtsau7vU9MrW8ijjHvgKS4W+Mr9kJW5qb1LGsyRW3Gzt4RrCgKeLiSWAcMKjtqNcWhIetV5rlxU9Y5ijewQbpZQRB5x4DqyVJfwe/fpuIDvC9E5WA+v3F7OeFQHZbBwV/l6MHCWDGdlH8nA6ryROXPD8wJCKg32Y9X2BphGZeum82jmUs2WqSXeN7tVhrh2/dkUBARe8UK54uMXoWKz7cjxlNNweFsTwpGLgjEQYwynmZ9XH/9p7y72LRj3BECaI1TKIpTdz0k1n09d/cFeFn0pKy8E2eSkZgNQl1vr2bc9ud755GxK7WrnYqB5k56MXxYElmr8=
+    secure: ${releases_api_key}
   file: 
     - afpre_${TRAVIS_TAG}_all.deb
     - afpre-${TRAVIS_TAG}-1.noarch.rpm
