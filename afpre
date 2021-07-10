@@ -121,7 +121,7 @@ variable_empty "${ADHOC_ACCOUNT}" || ACCOUNT="${ADHOC_ACCOUNT}"
 variable_empty "${ADHOC_ROLE}" || ROLE="${ADHOC_ROLE}"
 variable_empty "${NAME}" && read -p "username: " NAME
 variable_empty "${PW}" && {
-	read -p "password: " -s PW
+	read -p "password: " -sr PW
 	echo
 }
 
